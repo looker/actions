@@ -70,7 +70,6 @@ export default class Server implements Hub.RouteBuilder {
         label: process.env.ACTION_HUB_LABEL,
       }
       res.json(response)
-      winston.debug(`response: ${JSON.stringify(response)}`)
     })
 
     this.route("/actions/:actionId", async (req, res) => {
