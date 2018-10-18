@@ -1,6 +1,5 @@
 import * as req from "request-promise-native"
 import * as winston from "winston"
-
 import * as Hub from "../../hub"
 
 export function registerDebugAction() {

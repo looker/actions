@@ -1,0 +1,13 @@
+html
+  head
+    title Success
+    link(href="/workplace/styles.css", rel="stylesheet", type="text/css")
+  body.success
+    h1 Your Access Token
+    div.access-token #{accessToken}
+    h2 Please copy and paste this token into the Workplace by Facebook Action config settings in your Looker instance.
+    div.instructions
+      p
+        img(src="/workplace/instruction-1.png", alt="Edit Workplace by Facebook Action in Looker instance")
+      p
+        img(src="/workplace/instruction-2.png", alt="Paste Access Token and Save")

@@ -9,6 +9,9 @@ import * as Hub from "../hub"
 import * as ExecuteProcessQueue from "../xpc/execute_process_queue"
 import * as apiKey from "./api_key"
 
+import { installWorkplace } from "../actions/workplace/install"
+import { uninstallWorkplace } from "../actions/workplace/uninstall"
+
 const expressWinston = require("express-winston")
 const blocked = require("blocked-at")
 
@@ -87,12 +90,14 @@ export default class Server implements Hub.RouteBuilder {
     this.app.use(expressWinston.logger({
       winstonInstance: winston,
       dynamicMeta: this.requestLog,
-      requestFilter(req: {[key: string]: any}, propName: string) {
+      requestFilter(req: { [key: string]: any }, propName: string) {
         if (propName !== "headers") {
           return req[propName]
         }
       },
     }))
+    this.app.set("view engine", "pug")
+    this.app.set("views", path.resolve(__dirname + "/../views"))
     this.app.use(express.static("public"))
 
     this.route("/", async (req, res) => {
@@ -140,6 +145,10 @@ export default class Server implements Hub.RouteBuilder {
       res.sendFile(statusJsonPath)
     })
 
+    // Facebook Workplace install endpoints
+    // mounting this in the same namespace as the facebook-workplace action
+    this.app.get("/actions/workplace-facebook/install", installWorkplace)
+    this.app.get("/actions/workplace-facebook/uninstall", uninstallWorkplace)
   }
 
   actionUrl(action: Hub.Action) {
@@ -191,7 +200,7 @@ export default class Server implements Hub.RouteBuilder {
       const tokenMatch = headerValue ? headerValue.match(TOKEN_REGEX) : undefined
       if (!tokenMatch || !apiKey.validate(tokenMatch[1])) {
         res.status(403)
-        res.json({success: false, error: "Invalid 'Authorization' header."})
+        res.json({ success: false, error: "Invalid 'Authorization' header." })
         this.logInfo(req, res, "Unauthorized request.")
         return
       }

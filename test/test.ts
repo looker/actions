@@ -38,6 +38,7 @@ import "../src/actions/tray/test_tray"
 import "../src/actions/twilio/test_twilio"
 import "../src/actions/twilio/test_twilio_message"
 import "../src/actions/webhook/test_webhook"
+import "../src/actions/workplace/test_workplace"
 import "../src/actions/zapier/test_zapier"
 
 import { DebugAction } from "../src/actions/debug/debug"
