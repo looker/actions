@@ -133,13 +133,10 @@ describe(`${action.constructor.name} unit tests`, () => {
           type: "select",
           default: "A",
         }, {
-          label: "Path",
-          name: "path",
-          type: "string",
-        }, {
-          label: "Filename",
+          label: "File Path",
           name: "filename",
           type: "string",
+          required: true,
         }],
       }).and.notify(stubClient.restore).and.notify(done)
 

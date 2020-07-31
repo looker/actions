@@ -24,13 +24,6 @@ export class AmazonS3Action extends Hub.Action {
       required: true,
       sensitive: true,
       description: "Your secret key for S3.",
-    }, {
-      name: "region",
-      label: "Region",
-      required: true,
-      sensitive: false,
-      description: "S3 Region e.g. us-east-1, us-west-1, ap-south-1 from " +
-        "http://docs.aws.amazon.com/general/latest/gr/rande.html#s3_region.",
     },
   ]
 
@@ -39,16 +32,17 @@ export class AmazonS3Action extends Hub.Action {
     if (!request.formParams.bucket) {
       throw new Error("Need Amazon S3 bucket.")
     }
+    const bucket = request.formParams.bucket
 
-    const s3 = this.amazonS3ClientFromRequest(request)
+    const region = await this.getBucketRegionFromRequest(request, bucket)
+
+    const s3 = this.amazonS3ClientFromRequest(request, region)
 
     const filename = request.formParams.filename || request.suggestedFilename()
 
     if (!filename) {
       throw new Error("Couldn't determine filename.")
     }
-
-    const bucket = request.formParams.bucket
 
     try {
       await request.stream(async (readable) => {
@@ -81,23 +75,44 @@ export class AmazonS3Action extends Hub.Action {
       type: "select",
       default: buckets[0].Name,
     }, {
-      label: "Path",
-      name: "path",
-      type: "string",
-    }, {
-      label: "Filename",
+      label: "File Path",
       name: "filename",
       type: "string",
+      required: true,
     }]
     return form
   }
 
-  protected amazonS3ClientFromRequest(request: Hub.ActionRequest) {
+  protected s3Endpoint(_region?: string): string | undefined {
+    return undefined
+  }
+
+  // It's shockingly hard and weird to figure out the AWS region from a given bucket name.
+  private async getBucketRegionFromRequest(
+    request: Hub.ActionRequest,
+    bucketName: string,
+  ): Promise<string> {
+    const s3 = this.amazonS3ClientFromRequest(request)
+    try {
+      // If you're the bucket owner this will work
+      const location = await s3.headBucket({ Bucket: bucketName }).promise()
+      return location.$response.httpResponse.headers["x-amz-bucket-region"]
+    } catch (e) {
+      // Otherwise the error (!?) will include the region
+      return e.region
+    }
+  }
+
+  // Region is optional here because `getBucketRegionFromRequest` ignores the region
+  private amazonS3ClientFromRequest(request: Hub.ActionRequest, region?: string) {
     return new S3({
-      region: request.params.region,
+      region,
+      endpoint: this.s3Endpoint(region),
       accessKeyId: request.params.access_key_id,
       secretAccessKey: request.params.secret_access_key,
     })
   }
 
 }
+
+Hub.addAction(new AmazonS3Action())
