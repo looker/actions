@@ -13,9 +13,7 @@ function expectWebhookMatch(
   table: any,
   match: any,
 ) {
-  const createSpy = sinon.spy((params: any, callback: (err: any, data: any) => void) => {
-    callback(null, `successfully sent ${params}`)
-  })
+  const createSpy = sinon.spy(async (_params: any) => Promise.resolve())
   const tableSpy = sinon.spy(() => ({create: createSpy}))
   const baseSpy = sinon.spy(() => (tableSpy))
 
@@ -118,12 +116,10 @@ describe(`${action.constructor.name} unit tests`, () => {
         },
       }
       const tableSpy = sinon.spy(() => ({
-        create: (_rec: any, cb: (err: any) => void) => {
-          cb({
-            type: "TABLE_NOT_FOUND",
-            message: "Could not find table Contacts123 in application app",
-          })
-        },
+        create: async (_rec: any) => Promise.reject({
+          type: "TABLE_NOT_FOUND",
+          message: "Could not find table Contacts123 in application app",
+        }),
       }))
       const baseSpy = sinon.spy(() => (tableSpy))
 

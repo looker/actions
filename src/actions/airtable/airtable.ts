@@ -56,15 +56,7 @@ export class AirtableAction extends Hub.Action {
       const table = base(request.formParams.table)
 
       await Promise.all(records.map(async (record: any) => {
-        return new Promise<void>((resolve, reject) => {
-          table.create(record, (err: { message: string } | null, rec: any) => {
-            if (err) {
-              reject(err)
-            } else {
-              resolve(rec)
-            }
-          })
-        })
+        return table.create(record, {typecast: true})
       }))
     } catch (e) {
       response = { success: false, message: e.message }
