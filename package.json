@@ -54,6 +54,7 @@
     "@types/uuid": "^3.4.3",
     "@types/winston": "^2.3.6",
     "airtable": "^0.7.2",
+    "@rudderstack/rudder-sdk-node": "^0.0.3",
     "analytics-node": "^3.3.0",
     "async-mutex": "^0.1.4",
     "aws-sdk": "^2.362.0",

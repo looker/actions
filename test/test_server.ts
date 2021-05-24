@@ -39,7 +39,7 @@ describe("the action hub", () => {
       })
   })
 
-  it("for looker versions before 5.5 it returns only segment", (done) => {
+  it("for looker versions before 5.5 it returns segment and rudderstack", (done) => {
     const stub = sinon.stub(apiKey, "validate").callsFake((k: string) => k === "foo")
     chai.request(new Server().app)
       .post("/")
@@ -47,7 +47,7 @@ describe("the action hub", () => {
       .set("User-Agent", "LookerOutgoingWebhook/5.0.0")
       .end((_err, res) => {
         chai.expect(res).to.have.status(200)
-        chai.expect(res.body.integrations.length).to.equal(1)
+        chai.expect(res.body.integrations.length).to.equal(2)
         stub.restore()
         done()
       })
