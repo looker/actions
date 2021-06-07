@@ -37,7 +37,7 @@ export interface ParamMap {
 
 export interface ActionAttachment {
   dataBuffer?: Buffer
-  encoding?: string
+  encoding?: BufferEncoding
   dataJSON?: any
   mime?: string
   fileExtension?: string

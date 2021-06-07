@@ -19,7 +19,7 @@ describe(`${action.constructor.name} unit tests`, () => {
     let stubUploadToS3: sinon.SinonStub
     let stubChunkToS3: sinon.SinonStub
     let stubProjectFile: sinon.SinonStub
-    const now = new Date()
+    const now = new Date().getTime()
     afterEach(() => {
       stubHttpPost.restore()
       stubStartProject.restore()

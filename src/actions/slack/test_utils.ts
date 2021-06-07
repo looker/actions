@@ -56,6 +56,7 @@ describe(`slack/utils unit tests`, () => {
     describe("getDisplayedFormFields", () => {
         it("returns correct channels", (done) => {
             const slackClient = new WebClient("token")
+            // @ts-ignore
             sinon.stub(slackClient.conversations, "list").callsFake((filters: any) => filters.cursor ?
               {
                   ok: true,
@@ -75,6 +76,7 @@ describe(`slack/utils unit tests`, () => {
                   },
               },
             )
+            // @ts-ignore
             sinon.stub(slackClient.users, "list").callsFake((filters: any) => filters.cursor ?
                 {
                     ok: true,

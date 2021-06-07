@@ -24,7 +24,7 @@ export class ExecuteProcessQueue extends ProcessQueue {
                 const timeout = setTimeout(this.processTimeoutKiller, this.PROCESS_TIMEOUT, child, webhookId, reject)
                 child.on("message", (actionResponse) => {
                     clearTimeout(timeout)
-                    resolve(actionResponse)
+                    resolve(actionResponse as string)
                     winston.info(`execute process was successful`, {webhookId})
                     succeeded = true
                     child.kill()

@@ -1,7 +1,7 @@
 import * as normalizeUrl from "normalize-url"
 import * as httpRequest from "request-promise-native"
-import * as url from "url"
 
+import { URL } from "url"
 import * as Hub from "../../hub"
 
 export class DataRobotAction extends Hub.Action {
@@ -97,7 +97,7 @@ export class DataRobotAction extends Hub.Action {
 
   private getDataRobotApiUrl() {
     if (this.dataRobotUrl) {
-      return url.resolve(this.dataRobotUrl, "/api/v2")
+      return new URL("/api/v2", this.dataRobotUrl)
     }
 
     return "https://app.datarobot.com/api/v2"

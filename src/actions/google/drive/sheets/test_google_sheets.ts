@@ -456,14 +456,16 @@ describe(`${action.constructor.name} unit tests`, () => {
         const spreadSheetsStub = {
           batchUpdate: async () => Promise.resolve(),
         }
-        const batchUpdateStub = sinon.stub(spreadSheetsStub, "batchUpdate").rejects({code: 429})
+        const batchUpdateCallSpy = sinon.spy(async () => { throw {code: 429}})
+        const batchUpdateStub = sinon.stub(spreadSheetsStub, "batchUpdate")
+            .callsFake(batchUpdateCallSpy)
 
         const sheet = {
           spreadsheets: spreadSheetsStub,
         }
         // @ts-ignore
         chai.expect(action.flushRetry({}, sheet , "0")).to.eventually.be.fulfilled.then( () => {
-          chai.expect(batchUpdateStub).to.have.callCount(5)
+          chai.expect(batchUpdateCallSpy).to.have.callCount(5)
           chai.expect(delayStub).to.have.been.calledWith(3000)
           chai.expect(delayStub).to.have.been.calledWith(9000)
           chai.expect(delayStub).to.have.been.calledWith(27000)
@@ -487,13 +489,10 @@ describe(`${action.constructor.name} unit tests`, () => {
           spreadsheets: spreadSheetsStub,
         }
         // @ts-ignore
-        chai.expect(action.flushRetry({}, sheet , "0")).to.eventually.be.fulfilled.then( () => {
-          chai.expect(batchUpdateStub).to.have.callCount(1)
-          chai.expect(delayStub).to.have.been.calledWith(3000)
-          batchUpdateStub.restore()
-          delayStub.restore()
-          done()
-        })
+        chai.expect(action.flushRetry({}, sheet , "0")).to.throw
+        batchUpdateStub.restore()
+        delayStub.restore()
+        done()
       })
     })
 

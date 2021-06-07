@@ -1,4 +1,3 @@
-import * as req from "request-promise-native"
 import * as winston from "winston"
 
 import * as Hub from "../../hub"
@@ -15,8 +14,9 @@ export class DebugAction extends Hub.Action {
   label = "Debug"
   description = "Sends data to a sample website and optionally sleeps."
   supportedActionTypes = [Hub.ActionType.Cell, Hub.ActionType.Dashboard, Hub.ActionType.Query]
+  supportedFormats = []
   params = []
-  executeInOwnProcess = true
+  executeInOwnProcess = false
 
   async execute(request: Hub.ActionRequest) {
 
@@ -25,29 +25,6 @@ export class DebugAction extends Hub.Action {
     function doActivity(activity: string) {
       winston.info(`[debug action] Doing ${activity}...`)
       activities.push(activity)
-    }
-
-    // Simulate download URL
-    const downloadUrl = request.formParams.simulated_download_url
-    if (downloadUrl) {
-      if (!request.scheduledPlan) {
-        request.scheduledPlan = {}
-      }
-      request.scheduledPlan.downloadUrl = downloadUrl
-      let rows = 0
-      await request.streamJson((row) => {
-        // Do some busy work
-        JSON.parse(JSON.stringify(JSON.parse(JSON.stringify(row))))
-        rows++
-      })
-      doActivity(`JSON streaming of ${rows} rows`)
-    }
-
-    // Make an HTTP request
-    const url = process.env.ACTION_HUB_DEBUG_ENDPOINT
-    if (url) {
-      doActivity("HTTP request")
-      await req.get({url}).promise()
     }
 
     // Delay if needed

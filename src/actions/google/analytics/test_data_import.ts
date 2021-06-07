@@ -45,7 +45,7 @@ describe(`${action.constructor.name} class`, () => {
     gaSinonSandbox.stub(Hub.ActionCrypto.prototype, "encrypt").callsFake( async (s: string) => b64.encode(s) )
     gaSinonSandbox.stub(Hub.ActionCrypto.prototype, "decrypt").callsFake( async (s: string) => b64.decode(s) )
 
-    gaClientStub = gaSinonSandbox.stub(google, "analytics").returns(fakeClientObj)
+    gaClientStub = gaSinonSandbox.stub(google, "analytics").returns(fakeClientObj as any)
   })
 
   afterEach(() => {

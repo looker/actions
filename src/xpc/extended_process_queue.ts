@@ -35,7 +35,7 @@ export class ExtendedProcessQueue extends ProcessQueue {
       let succeeded = false
       child.on("message", (response) => {
         if (response !== this.DONE_MESSAGE) {
-          lookerResponseResolve(response)
+          lookerResponseResolve(response as string)
           winston.info(`execute process returning successful response to Looker`, {webhookId})
         } else {
           winston.info(`execute process finished successfully`, {webhookId})

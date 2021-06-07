@@ -5,6 +5,11 @@
     "src/hub/**/*.ts",
     "src/server/**/*.ts",
     "src/xpc/**/**.ts",
-    "src/crypto/**/**.ts"
+    "src/crypto/**/**.ts",
+    "src/actions/**/!(test)**.ts",
+    "src/actions/index.ts"
+  ],
+  "files": [
+    "src/actions/sagemaker/strip_columns.js"
   ]
 }

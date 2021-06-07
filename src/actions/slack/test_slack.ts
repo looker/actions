@@ -9,6 +9,7 @@ import * as utils from "./utils"
 
 const action = new SlackAction()
 
+// @ts-ignore
 const stubSlackClient = (fn: () => void) => sinon.stub(SlackClientManager, "makeSlackClient").callsFake(fn)
 
 describe(`${action.constructor.name} tests`, () => {
@@ -257,6 +258,7 @@ describe(`${action.constructor.name} tests`, () => {
           },
         }
 
+        // @ts-ignore
         const stubClient = sinon.stub(SlackClientManager, "makeSlackClient").callsFake((token) => {
           switch (token) {
             case "someToken1":
@@ -270,6 +272,7 @@ describe(`${action.constructor.name} tests`, () => {
           }
         })
 
+        // @ts-ignore
         getDisplayedFormFieldsStub = sinon.stub(utils, "getDisplayedFormFields").callsFake((client) => {
           chai.expect(client).to.equals(mockClient2)
           return [
@@ -391,6 +394,7 @@ describe(`${action.constructor.name} tests`, () => {
         const mockClient1 = { id: "I'm mockClient1", token: "some token 1"}
         const mockClient2 = { id: "I'm mockClient2", token: "some token 2"}
 
+        // @ts-ignore
         const stubClient = sinon.stub(SlackClientManager, "makeSlackClient").callsFake((token) => {
           switch (token) {
             case "some token 1":
@@ -415,6 +419,7 @@ describe(`${action.constructor.name} tests`, () => {
 
         request.formParams = { workspace: "ws2" }
 
+        // @ts-ignore
         handleExecuteStub = sinon.stub(utils, "handleExecute").callsFake((r, client) => {
           // pass in the whole request
           chai.expect(r).to.equals(request)

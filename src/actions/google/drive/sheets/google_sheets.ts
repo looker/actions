@@ -3,6 +3,7 @@ import * as Hub from "../../../../hub"
 import * as parse from "csv-parse"
 import {Credentials} from "google-auth-library"
 import {drive_v3, google, sheets_v4} from "googleapis"
+import {GaxiosPromise} from "googleapis-common"
 import * as winston from "winston"
 import Drive = drive_v3.Drive
 import Sheet = sheets_v4.Sheets
@@ -235,7 +236,8 @@ export class GoogleSheetsAction extends GoogleDriveAction {
             })
     }
 
-    async clearSheet(spreadsheetId: string, sheet: Sheet, sheetId: number) {
+    async clearSheet(spreadsheetId: string, sheet: Sheet, sheetId: number):
+        GaxiosPromise<sheets_v4.Schema$ClearValuesResponse>  {
         return sheet.spreadsheets.batchUpdate({
             spreadsheetId,
             requestBody: {
@@ -270,15 +272,20 @@ export class GoogleSheetsAction extends GoogleDriveAction {
         while (!retrySuccess && retryCount <= MAX_RETRY_COUNT) {
             retrySuccess = true
             await this.delay((3 ** retryCount) * 1000)
-            await sheet.spreadsheets.batchUpdate({ spreadsheetId, requestBody: buffer}).catch((e: any) => {
+            try {
+                return await sheet.spreadsheets.batchUpdate({ spreadsheetId, requestBody: buffer})
+            } catch (e) {
+                retrySuccess = false
                 if (e.code === 429) {
-                    retrySuccess = false
                     winston.warn(`Retry number ${retryCount} failed`)
                     winston.info(e)
+                } else {
+                    throw e
                 }
-            })
-            retryCount++
+                retryCount++
+            }
         }
+        winston.warn("All retries failed")
     }
 
     protected async delay(time: number) {

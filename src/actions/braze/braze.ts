@@ -1,5 +1,5 @@
 import * as req from "request-promise-native"
-import * as url from "url"
+import { URL } from "url"
 
 import * as Hub from "../../hub"
 
@@ -200,13 +200,13 @@ export class BrazeAction extends Hub.Action {
   }
 
   async sendChunk(endpoint: string, apiKey: string, chunk: BrazeApiRow[]) {
-    const urlendpoint = url.parse(endpoint)
+    const urlendpoint = new URL(endpoint)
     const reqbody: BrazeApiBody = {
       api_key: apiKey,
       attributes: chunk,
     }
     await req.post({
-      uri: urlendpoint, headers: {"Content-Type": "application/json"},
+      uri: urlendpoint.toString(), headers: {"Content-Type": "application/json"},
       body: reqbody, json: true})
       .promise()
   }

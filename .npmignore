@@ -1,0 +1,6 @@
+node_modules/
+docs/
+ci/
+bin/
+test/
+CODE_OF_CONDUCT.md

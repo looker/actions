@@ -2,7 +2,7 @@ import * as Hub from "../../hub"
 
 import * as Path from "path"
 import * as Client from "ssh2-sftp-client"
-import * as URL from "url"
+import { URL } from "url"
 
 export class SFTPAction extends Hub.Action {
 
@@ -27,7 +27,7 @@ export class SFTPAction extends Hub.Action {
       }
 
       const client = await this.sftpClientFromRequest(request)
-      const parsedUrl = URL.parse(request.formParams.address)
+      const parsedUrl = new URL(request.formParams.address)
       if (!parsedUrl.pathname) {
         throw "Needs a valid SFTP address."
       }
@@ -70,7 +70,7 @@ export class SFTPAction extends Hub.Action {
   private async sftpClientFromRequest(request: Hub.ActionRequest) {
 
     const client = new Client()
-    const parsedUrl = URL.parse(request.formParams.address!)
+    const parsedUrl = new URL(request.formParams.address!)
     if (!parsedUrl.hostname) {
       throw "Needs a valid SFTP address."
     }

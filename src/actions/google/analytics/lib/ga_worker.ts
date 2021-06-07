@@ -127,7 +127,7 @@ export class GoogleAnalyticsActionWorker {
       }
 
       const uploadResponse = await this.gaClient.management.uploads.uploadData(uploadParams)
-      this.newUploadId = uploadResponse.data.id
+      this.newUploadId = uploadResponse.data.id!
     })
   }
 

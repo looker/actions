@@ -1,7 +1,7 @@
 import * as https from "request-promise-native"
 
 import {GaxiosResponse} from "gaxios"
-import { Credentials } from "google-auth-library"
+import {Credentials, OAuth2Client} from "google-auth-library"
 import { drive_v3, google } from "googleapis"
 
 import * as winston from "winston"
@@ -186,7 +186,7 @@ export class GoogleDriveAction extends Hub.OAuthAction {
     return false
   }
 
-  oauth2Client(redirectUri: string | undefined) {
+  oauth2Client(redirectUri: string | undefined): OAuth2Client {
     return new google.auth.OAuth2(
       process.env.GOOGLE_DRIVE_CLIENT_ID,
       process.env.GOOGLE_DRIVE_CLIENT_SECRET,

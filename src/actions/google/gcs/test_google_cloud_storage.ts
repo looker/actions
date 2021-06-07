@@ -36,7 +36,7 @@ function expectGoogleCloudStorageMatch(request: Hub.ActionRequest,
   const stubSuggestedFilename = sinon.stub(request as any, "suggestedFilename")
     .callsFake(() => "stubSuggestedFilename")
   const stubDate = sinon.stub(Date, "now")
-    .callsFake(() => "1234")
+    .callsFake(() => 1234)
   return chai.expect(action.validateAndExecute(request)).to.be.fulfilled.then(() => {
     chai.expect(bucketSpy).to.have.been.calledWithMatch(bucketMatch)
     chai.expect(fileSpy).to.have.been.calledWithMatch(fileMatch)
