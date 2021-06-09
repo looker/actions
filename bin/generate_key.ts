@@ -1,8 +1,7 @@
-import * as crypto from "crypto"
-import * as dotenv from "dotenv"
-import * as keys from "../src/server/api_key"
+import "dotenv/config"
 
-dotenv.config()
+import * as crypto from "crypto"
+import * as keys from "../src/server/api_key"
 
 /* tslint:disable no-console */
 console.log("Here's a valid API key:")
