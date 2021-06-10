@@ -73,7 +73,7 @@
     "jira-client": "^6.4.1",
     "mailchimp": "^1.2.0",
     "node-marketo-rest": "^0.7.5",
-    "nodemailer": "^5.1.1",
+    "nodemailer": "^6.4.16",
     "nodemon": "^1.12.1",
     "normalize-url": "4.5.1",
     "oboe": "^2.1.4",
