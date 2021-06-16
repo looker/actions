@@ -578,5 +578,14 @@ describe(`${action.constructor.name} unit tests`, () => {
         }).and.notify(stubClient.restore).and.notify(done)
       })
     })
+
+    describe("mimeType", () => {
+      it("uses the action mimeType if it exists", () => {
+        const request = new Hub.ActionRequest()
+        request.attachment = {mime: "foo"}
+        request.formParams = {format: "bar"}
+        chai.expect(action.getMimeType(request)).to.equal("application/vnd.google-apps.spreadsheet")
+      })
+    })
   })
 })

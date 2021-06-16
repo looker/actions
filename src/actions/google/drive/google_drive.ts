@@ -195,9 +195,10 @@ export class GoogleDriveAction extends Hub.OAuthAction {
   }
 
    async sendData(filename: string, request: Hub.ActionRequest, drive: Drive) {
+     const mimeType = this.getMimeType(request)
      const fileMetadata: drive_v3.Schema$File = {
        name: filename,
-       mimeType: this.mimeType,
+       mimeType,
        parents: request.formParams.folder ? [request.formParams.folder] : undefined,
      }
 
@@ -232,6 +233,31 @@ export class GoogleDriveAction extends Hub.OAuthAction {
        })
      }
      return driveList
+   }
+
+   getMimeType(request: Hub.ActionRequest) {
+     if (this.mimeType) {return this.mimeType}
+     if (request.attachment && request.attachment.mime) {return request.attachment.mime}
+     switch (request.formParams.format) {
+       case "csv":
+         return "text/csv"
+       case "xlsx":
+         return "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+       case "inline_json":
+         return "application/json"
+       case "json":
+         return "application/json"
+       case "json_label":
+         return "application/json"
+       case "json_detail":
+         return "application/json"
+       case "html":
+         return "text/html"
+       case "txt":
+         return "text/plain"
+       default:
+         return undefined
+     }
    }
 
   protected async getAccessTokenCredentialsFromCode(redirect: string, code: string) {

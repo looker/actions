@@ -255,4 +255,30 @@ describe(`${action.constructor.name} unit tests`, () => {
         .and.notify(stubReq.restore).and.notify(done)
     })
   })
+
+  describe("mimeType", () => {
+    it("identifies attachment mimeTypes", () => {
+      const request = new Hub.ActionRequest()
+      request.attachment = {mime: "application/zip;base64"}
+      request.formParams = {format: "foobar"}
+      chai.expect(action.getMimeType(request)).to.equal("application/zip;base64")
+      request.attachment = {mime: "application/pdf;base64"}
+      chai.expect(action.getMimeType(request)).to.equal("application/pdf;base64")
+      request.attachment = {mime: "image/png;base64"}
+      chai.expect(action.getMimeType(request)).to.equal("image/png;base64")
+    })
+
+    it("identifies mimeType for streamed actions", () => {
+      const request = new Hub.ActionRequest()
+      request.formParams = {format: "csv"}
+      chai.expect(action.getMimeType(request)).to.equal("text/csv")
+      request.formParams = {format: "json"}
+      chai.expect(action.getMimeType(request)).to.equal("application/json")
+    })
+
+    it("returns undefined if no format is given", () => {
+      const request = new Hub.ActionRequest()
+      chai.expect(action.getMimeType(request)).to.equal(undefined)
+    })
+  })
 })
