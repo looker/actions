@@ -1,6 +1,7 @@
 import * as chai from "chai"
 import * as sinon from "sinon"
 
+import * as Pcancel from "p-cancelable"
 import * as Hub from "../../hub"
 import { HubspotAction, HubspotCalls } from "./hubspot"
 
@@ -37,10 +38,11 @@ export const expectHubspotMatch = (
         },
       }
     })
+  const cancel: Pcancel<string>[] = []
 
   // Validate and Execute the request
   return chai
-    .expect(action.validateAndExecute(request))
+    .expect(action.validateAndExecute(request, cancel))
     .to.be.fulfilled.then(() => {
       chai.expect(batchUpdateCallSpy).to.have.been.calledWithExactly(match)
       stubClient.restore()

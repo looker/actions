@@ -6,8 +6,10 @@ import * as Hub from "../../hub"
 import { AmazonS3Action } from "./amazon_s3"
 
 import concatStream = require("concat-stream")
+import * as Pcancel from "p-cancelable"
 
 const action = new AmazonS3Action()
+const cancel: Pcancel<string>[] = []
 
 export function expectAmazonS3Match(thisAction: AmazonS3Action, request: Hub.ActionRequest, match: any) {
 
@@ -26,8 +28,7 @@ export function expectAmazonS3Match(thisAction: AmazonS3Action, request: Hub.Act
     }))
   const stubSuggestedFilename = sinon.stub(request as any, "suggestedFilename")
     .callsFake(() => "stubSuggestedFilename")
-
-  return chai.expect(thisAction.validateAndExecute(request)).to.be.fulfilled.then(() => {
+  return chai.expect(thisAction.validateAndExecute(request, cancel)).to.be.fulfilled.then(() => {
     chai.expect(uploadSpy).to.have.been.called
     stubClient.restore()
     stubSuggestedFilename.restore()
@@ -49,8 +50,7 @@ describe(`${action.constructor.name} unit tests`, () => {
       request.attachment = {}
       request.attachment.dataBuffer = Buffer.from("1,2,3,4", "utf8")
       request.type = Hub.ActionType.Dashboard
-
-      return chai.expect(action.validateAndExecute(request)).to.eventually
+      return chai.expect(action.validateAndExecute(request, cancel)).to.eventually
         .be.rejectedWith("Need Amazon S3 bucket.")
     })
 
@@ -66,8 +66,7 @@ describe(`${action.constructor.name} unit tests`, () => {
         secret_access_key: "mysecret",
         region: "us-east-1",
       }
-
-      return chai.expect(action.validateAndExecute(request)).to.eventually
+      return chai.expect(action.validateAndExecute(request, cancel)).to.eventually
         .be.rejectedWith(
           "A streaming action was sent incompatible data. The action must have a download url or an attachment.")
     })

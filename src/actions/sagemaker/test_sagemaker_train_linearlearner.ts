@@ -6,8 +6,10 @@ import * as Hub from "../../hub"
 import { SageMakerTrainLinearLearnerAction } from "./sagemaker_train_linearlearner"
 
 import concatStream = require("concat-stream")
+import * as Pcancel from "p-cancelable"
 
 const action = new SageMakerTrainLinearLearnerAction()
+const cancel: Pcancel<string>[] = []
 
 describe(`${action.constructor.name} unit tests`, () => {
 
@@ -194,7 +196,7 @@ describe(`${action.constructor.name} unit tests`, () => {
 
         const stubPoller = sinon.stub(action as any, "startPoller")
 
-        return chai.expect(action.validateAndExecute(request))
+        return chai.expect(action.validateAndExecute(request, cancel))
           .to.be.fulfilled
           .then((result) => {
             chai.expect(result.success, "result.success").to.be.true

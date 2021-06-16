@@ -7,6 +7,7 @@ import * as Hub from "../../hub"
 import { WebhookAction } from "./webhook"
 
 import concatStream = require("concat-stream")
+import * as Pcancel from "p-cancelable"
 
 class GoodWebhookAction extends WebhookAction {
 
@@ -28,6 +29,7 @@ class GoodWebhookAction extends WebhookAction {
 }
 
 const action = new GoodWebhookAction()
+const cancel: Pcancel<string>[] = []
 
 function expectWebhookMatch(request: Hub.ActionRequest, match: {url: string, body: Buffer}) {
   const postSpy = sinon.spy((params: any, callback: (err: any, response: any) => void) => {
@@ -38,7 +40,7 @@ function expectWebhookMatch(request: Hub.ActionRequest, match: {url: string, bod
     callback(null, `post success`)
   })
   const stubPost = sinon.stub(req, "post").callsFake(postSpy)
-  return chai.expect(action.validateAndExecute(request)).to.be.fulfilled.then(() => {
+  return chai.expect(action.validateAndExecute(request, cancel)).to.be.fulfilled.then(() => {
     chai.expect(postSpy).to.have.been.called
     stubPost.restore()
   })
@@ -56,7 +58,7 @@ describe(`${action.constructor.name} unit tests`, () => {
         fields: [{name: "coolfield", tags: ["user_id"]}],
         data: [{coolfield: {value: "funvalue"}}],
       }}
-      return chai.expect(action.validateAndExecute(request)).to.eventually
+      return chai.expect(action.validateAndExecute(request, cancel)).to.eventually
         .be.rejectedWith("Missing url.")
     })
 
@@ -70,7 +72,7 @@ describe(`${action.constructor.name} unit tests`, () => {
         fields: [{name: "coolfield", tags: ["user_id"]}],
         data: [{coolfield: {value: "funvalue"}}],
       }}
-      return chai.expect(action.validateAndExecute(request)).to.eventually
+      return chai.expect(action.validateAndExecute(request, cancel)).to.eventually
         .be.rejectedWith("Incorrect domain for url.")
     })
 

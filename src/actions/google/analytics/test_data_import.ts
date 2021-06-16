@@ -3,6 +3,7 @@ import { expect } from "chai"
 import concatStream = require("concat-stream")
 import * as gaxios from "gaxios"
 import { analytics_v3, google } from "googleapis"
+import * as Pcancel from "p-cancelable"
 import * as sinon from "sinon"
 import * as Hub from "../../../hub"
 import { GoogleOAuthHelper } from "../common/oauth_helper"
@@ -12,6 +13,7 @@ const teastOAuthClientId = "test_oauth_client_id"
 const teastOAuthClientSecret = "test_oauth_client_secret"
 
 const action = new GoogleAnalyticsDataImportAction(teastOAuthClientId, teastOAuthClientSecret)
+const cancel: Pcancel<string>[] = []
 
 describe(`${action.constructor.name} class`, () => {
   // Use a sandbox to avoid interaction with other test files
@@ -153,7 +155,7 @@ describe(`${action.constructor.name} class`, () => {
               + " MissingAuthError: User state was missing or did not contain tokens & redirect",
           })
 
-          const actualResponse = await action.validateAndExecute(request)
+          const actualResponse = await action.validateAndExecute(request, cancel)
           expect(actualResponse).to.deep.equal(expectedResponse)
         })
       }
@@ -171,7 +173,7 @@ describe(`${action.constructor.name} class`, () => {
             + " MissingRequiredParamsError: Did not receive required form param 'dataSourceCompositeId'",
         })
 
-        const actualResponse = await action.validateAndExecute(request)
+        const actualResponse = await action.validateAndExecute(request, cancel)
         expect(actualResponse).to.deep.equal(expectedResponse)
       })
 
@@ -186,7 +188,7 @@ describe(`${action.constructor.name} class`, () => {
             + " MissingRequiredParamsError: Did not receive required form param 'dataSourceSchema'",
         })
 
-        const actualResponse = await action.validateAndExecute(request)
+        const actualResponse = await action.validateAndExecute(request, cancel)
         expect(actualResponse).to.deep.equal(expectedResponse)
       })
     })
@@ -201,8 +203,7 @@ describe(`${action.constructor.name} class`, () => {
         const expectedResponse = makeErrorResponse({withReset: false})
         expectedResponse.message = `Error during action setup: ${testException.toString()}`
 
-        const actualResponse = await action.validateAndExecute(request)
-
+        const actualResponse = await action.validateAndExecute(request, cancel)
         expect(actualResponse).to.deep.equal(expectedResponse)
       })
     })
@@ -218,8 +219,7 @@ describe(`${action.constructor.name} class`, () => {
         const expectedResponse = makeErrorResponse({withReset: false})
         expectedResponse.message = `Error during data upload step: ${testException.toString()}`
 
-        const actualResponse = await action.validateAndExecute(request)
-
+        const actualResponse = await action.validateAndExecute(request, cancel)
         expect(actualResponse).to.deep.equal(expectedResponse)
       })
 
@@ -236,9 +236,7 @@ describe(`${action.constructor.name} class`, () => {
 
         uploadDataStub.resolves({data: {id: "NewUploadIdFromTest"}})
 
-        const actualResponse = await action.validateAndExecute(request)
-
-        // Check the basics
+        const actualResponse = await action.validateAndExecute(request, cancel)// Check the basics
         expect(actualResponse).to.exist
         expect(actualResponse.success).to.be.true
         expect(gaClientStub).to.be.calledOnce
@@ -264,8 +262,7 @@ describe(`${action.constructor.name} class`, () => {
         const testException = new TestException("message from uploadData test stub")
         uploadDataStub.throws(testException)
 
-        const actualResponse = await action.validateAndExecute(request)
-
+        const actualResponse = await action.validateAndExecute(request, cancel)
         expect(actualResponse).to.deep.equal({
           success: false,
           message: `Error during data upload step: ${testException.toString()}`,
@@ -282,8 +279,7 @@ describe(`${action.constructor.name} class`, () => {
         const testException = new TestException("message from uploadData test stub")
         uploadDataStub.throws(testException)
 
-        const actualResponse = await action.validateAndExecute(request)
-
+        const actualResponse = await action.validateAndExecute(request, cancel)
         expect(actualResponse).to.deep.equal({
           success: false,
           message: `Error during data upload step: ${testException.toString()}`,
@@ -297,8 +293,7 @@ describe(`${action.constructor.name} class`, () => {
 
         uploadDataStub.resolves({data: {id: "fakeNewIdFromTest"}})
 
-        const actualResponse = await action.validateAndExecute(request)
-
+        const actualResponse = await action.validateAndExecute(request, cancel)
         expect(actualResponse).to.have.nested.property("state.data").that.is.a("string")
 
         const state = JSON.parse(actualResponse.state!.data!)
@@ -319,8 +314,7 @@ describe(`${action.constructor.name} class`, () => {
 
         uploadDataStub.resolves({data: {id: "fakeNewIdFromTest"}})
 
-        const actualResponse = await action.validateAndExecute(request)
-
+        const actualResponse = await action.validateAndExecute(request, cancel)
         expect(actualResponse.success).to.be.true
         expect(deleteUploadDataStub).to.not.be.called
       })
@@ -332,8 +326,7 @@ describe(`${action.constructor.name} class`, () => {
 
         uploadDataStub.resolves({data: {id: "fakeNewIdFromTest"}})
 
-        const actualResponse = await action.validateAndExecute(request)
-
+        const actualResponse = await action.validateAndExecute(request, cancel)
         expect(actualResponse.success).to.be.true
         expect(deleteUploadDataStub).to.not.be.called
       })
@@ -343,8 +336,7 @@ describe(`${action.constructor.name} class`, () => {
 
         uploadDataStub.throws(new TestException("message from uploadData test stub"))
 
-        const actualResponse = await action.validateAndExecute(request)
-
+        const actualResponse = await action.validateAndExecute(request, cancel)
         expect(actualResponse.success).to.be.false
         expect(deleteUploadDataStub).to.not.be.called
       })
@@ -361,8 +353,7 @@ describe(`${action.constructor.name} class`, () => {
           {name: "surprise no id"},
         ]}})
 
-        const actualResponse = await action.validateAndExecute(request)
-
+        const actualResponse = await action.validateAndExecute(request, cancel)
         expect(actualResponse.success).to.be.true
         expect(deleteUploadDataStub).to.be.calledOnce
         expect(deleteUploadDataStub.getCall(0).args[0]).to.deep.equal({
@@ -383,7 +374,7 @@ describe(`${action.constructor.name} class`, () => {
         const testException = new TestException("message from uploads.list test stub")
         uploadsListStub.throws(testException)
 
-        const response = await action.validateAndExecute(request)
+        const response = await action.validateAndExecute(request, cancel)
 
         expect(response).to.be.an.instanceOf(Hub.ActionResponse)
         expect(response).to.have.property("success", false)

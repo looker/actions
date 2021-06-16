@@ -1,10 +1,12 @@
 import * as chai from "chai"
 import * as sinon from "sinon"
 
+import * as Pcancel from "p-cancelable"
 import * as Hub from "../../hub"
 import { SegmentTrackAction } from "./segment_track"
 
 const action = new SegmentTrackAction()
+const cancel: Pcancel<string>[] = []
 action.executeInOwnProcess = false
 
 describe(`${action.constructor.name} unit tests`, () => {
@@ -35,7 +37,7 @@ describe(`${action.constructor.name} unit tests`, () => {
           data: [{coolfield: {value: "funvalue"}}],
         }))}
 
-      return chai.expect(action.validateAndExecute(request)).to.be.fulfilled.then(() => {
+      return chai.expect(action.validateAndExecute(request, cancel)).to.be.fulfilled.then(() => {
         chai.expect(segmentCallSpy).to.have.been.calledWithExactly({
           userId: "funvalue",
           anonymousId: null,

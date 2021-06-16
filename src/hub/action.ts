@@ -1,4 +1,5 @@
 import * as fs from "fs"
+import * as Pcancel from "p-cancelable"
 import * as path from "path"
 import {ProcessQueue} from "../xpc/process_queue"
 
@@ -94,7 +95,7 @@ export abstract class Action {
     }
   }
 
-  async validateAndExecute(request: ActionRequest, queue?: ProcessQueue) {
+  async validateAndExecute(request: ActionRequest, cancelList: Pcancel<string>[], queue?: ProcessQueue) {
     if (this.supportedActionTypes.indexOf(request.type) === -1) {
       const types = this.supportedActionTypes.map((at) => `"${at}"`).join(", ")
       if (request.type as any) {
@@ -123,7 +124,7 @@ export abstract class Action {
       request.actionId = this.name
       winston.info(`Execute Action Enqueued. Queue length: ${queue.queue.size}`, {webhookId: request.webhookId})
       return new Promise<ActionResponse>((resolve, reject) => {
-        queue.run(JSON.stringify(request)).then((response: string) => {
+        queue.run(JSON.stringify(request), cancelList).then((response: string) => {
           const actionResponse = new ActionResponse()
           Object.assign(actionResponse, response)
           resolve(actionResponse)

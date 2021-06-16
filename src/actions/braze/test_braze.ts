@@ -4,6 +4,7 @@ import * as sinon from "sinon"
 
 import * as Hub from "../../hub"
 
+import * as Pcancel from "p-cancelable"
 import { BrazeAction } from "./braze"
 
 const sampleBrazeData = {
@@ -34,7 +35,8 @@ function expectBrazeMatch(request: Hub.ActionRequest) {
     return {success: true, message: "ok"}
   })
   const stubPost = sinon.stub(req, "post").callsFake(postSpy)
-  return chai.expect(action.validateAndExecute(request)).to.be.fulfilled.then(() => {
+  const cancel: Pcancel<string>[] = []
+  return chai.expect(action.validateAndExecute(request, cancel)).to.be.fulfilled.then(() => {
     chai.expect(postSpy).to.have.been.called
     stubPost.restore()
   })

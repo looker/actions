@@ -7,10 +7,12 @@ import concatStream = require("concat-stream")
 
 import * as Hub from "../../../hub"
 
+import * as Pcancel from "p-cancelable"
 import { ActionCrypto } from "../../../hub"
 import { GoogleDriveAction } from "./google_drive"
 
 const action = new GoogleDriveAction()
+const cancel: Pcancel<string>[] = []
 
 const stubFileName = "stubSuggestedFilename"
 const stubFolder = "stubSuggestedFolder"
@@ -33,8 +35,7 @@ function expectGoogleDriveMatch(request: Hub.ActionRequest, paramsMatch: any) {
         create: createSpy,
       },
     })
-
-  return chai.expect(action.validateAndExecute(request)).to.be.fulfilled.then(() => {
+  return chai.expect(action.validateAndExecute(request, cancel)).to.be.fulfilled.then(() => {
     chai.expect(createSpy).to.have.been.called
     stubClient.restore()
   })
@@ -94,7 +95,7 @@ describe(`${action.constructor.name} unit tests`, () => {
             create: async () => Promise.reject("reject"),
           },
         })
-      const resp = action.validateAndExecute(request)
+      const resp = action.validateAndExecute(request, cancel)
       chai.expect(resp).to.eventually.deep.equal({
         success: false,
         message: undefined,

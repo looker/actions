@@ -1,4 +1,5 @@
 import * as spawn from "child_process"
+import * as Pcancel from "p-cancelable"
 import * as winston from "winston"
 import {ProcessQueue} from "./process_queue"
 
@@ -14,9 +15,9 @@ export class ExecuteProcessQueue extends ProcessQueue {
         cb(msg)
     }
 
-    async run(data: string) {
+    async run(data: string, cancelList: Pcancel<string>[]) {
         return this.queue.add(async () => {
-            return new Promise<string>((resolve, reject) => {
+            const prom = new Pcancel<string>((resolve, reject, onCancel) => {
                 const child = spawn.fork(`./src/xpc/execute_process.ts`)
                 const webhookId = JSON.parse(data).webhookId
                 winston.info(`execute process created`, {webhookId})
@@ -63,8 +64,16 @@ export class ExecuteProcessQueue extends ProcessQueue {
                     }
                     reject(signal)
                 })
+                onCancel(() => {
+                    if (!succeeded && !child.killed) {
+                        winston.error(`Child process cancelled and killed`, {webhookId})
+                        child.kill()
+                    }
+                })
                 child.send(data)
             })
+            cancelList.push(prom)
+            return prom
         })
     }
 }

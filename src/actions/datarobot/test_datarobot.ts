@@ -4,6 +4,7 @@ import * as sinon from "sinon"
 
 import * as Hub from "../../hub"
 
+import * as Pcancel from "p-cancelable"
 import { DataRobotAction } from "./datarobot"
 
 const action = new DataRobotAction()
@@ -38,8 +39,9 @@ describe(`${action.constructor.name} unit tests`, () => {
         }
       })
       stubHttpPost = sinon.stub(httpRequest, "post").callsFake(postSpy)
+      const cancel: Pcancel<string>[] = []
 
-      chai.expect(action.validateAndExecute(request)).to.be.fulfilled.then(() => {
+      chai.expect(action.validateAndExecute(request, cancel)).to.be.fulfilled.then(() => {
         chai.expect(postSpy).to.have.been.called
       })
     })

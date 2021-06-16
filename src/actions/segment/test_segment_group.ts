@@ -1,10 +1,12 @@
 import * as chai from "chai"
 import * as sinon from "sinon"
 
+import * as Pcancel from "p-cancelable"
 import * as Hub from "../../hub"
 import { SegmentGroupAction } from "./segment_group"
 
 const action = new SegmentGroupAction()
+const cancel: Pcancel<string>[] = []
 action.executeInOwnProcess = false
 
 function expectSegmentMatch(request: Hub.ActionRequest, match: any) {
@@ -30,7 +32,7 @@ function expectSegmentMatch(request: Hub.ActionRequest, match: any) {
   }
   const merged = {...baseMatch, ...match}
 
-  return chai.expect(action.validateAndExecute(request)).to.be.fulfilled.then(() => {
+  return chai.expect(action.validateAndExecute(request, cancel)).to.be.fulfilled.then(() => {
     chai.expect(groupSpy).to.have.been.calledWithExactly(merged)
     stubClient.restore()
     stubAnon.restore()

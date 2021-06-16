@@ -1,6 +1,7 @@
 import * as bodyParser from "body-parser"
 import * as express from "express"
 import * as fs from "fs"
+import * as Pcancel from "p-cancelable"
 import * as path from "path"
 import * as Raven from "raven"
 import * as winston from "winston"
@@ -121,11 +122,20 @@ export default class Server implements Hub.RouteBuilder {
     })
 
     this.route("/actions/:actionId/execute", this.jsonKeepAlive(async (req, complete) => {
-      const request = Hub.ActionRequest.fromRequest(req)
-      const action = await Hub.findAction(req.params.actionId, { lookerVersion: request.lookerVersion })
-      const queue = action.extendedAction ? extendedJobQueue : expensiveJobQueue
-      const actionResponse = await action.validateAndExecute(request, queue)
-      complete(actionResponse.asJson())
+      const cancelList: Pcancel<string>[] = []
+      try {
+        const request = Hub.ActionRequest.fromRequest(req)
+        const action = await Hub.findAction(req.params.actionId, { lookerVersion: request.lookerVersion })
+        const queue = action.extendedAction ? extendedJobQueue : expensiveJobQueue
+        const actionResponse = await action.validateAndExecute(request, cancelList, queue)
+        complete(actionResponse.asJson())
+      } finally {
+        cancelList.forEach((prom) => {
+          if (!prom.isCanceled) {
+            prom.cancel("Express server request stopped")
+          }
+        })
+      }
     }))
 
     this.route("/actions/:actionId/form", this.jsonKeepAlive(async (req, complete) => {

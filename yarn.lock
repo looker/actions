@@ -317,6 +317,13 @@
   dependencies:
     "@types/node" "*"
 
+"@types/p-cancelable@^1.0.1":
+  version "1.0.1"
+  resolved "https://registry.yarnpkg.com/@types/p-cancelable/-/p-cancelable-1.0.1.tgz#4f0ce8aa3ee0007c2768b9b3e6e22af20a6eecbd"
+  integrity sha512-MGdhuVx7X2yJe4dgOnDQcZQAYgiC/QK1O5HUPgTMTxWYiOlyWEO5DWmPBlXQBU1F6/JM7aSgYBDrpt7kurC6dw==
+  dependencies:
+    p-cancelable "*"
+
 "@types/p-queue@^2.3.2":
   version "2.3.2"
   resolved "https://registry.yarnpkg.com/@types/p-queue/-/p-queue-2.3.2.tgz#16bc5fece69ef85efaf2bce8b13f3ebe39c5a1c8"
@@ -3840,6 +3847,11 @@ osenv@^0.1.4:
   dependencies:
     os-homedir "^1.0.0"
     os-tmpdir "^1.0.0"
+
+p-cancelable@*, p-cancelable@^2.1.1:
+  version "2.1.1"
+  resolved "https://registry.yarnpkg.com/p-cancelable/-/p-cancelable-2.1.1.tgz#aab7fbd416582fa32a3db49859c122487c5ed2cf"
+  integrity sha512-BZOr3nRQHOntUjTrH8+Lh54smKHoHyur8We1V8DSMVrl5A2malOOwuJRnKRDjSnkoeBh4at6BwEnb5I7Jl31wg==
 
 p-cancelable@^1.1.0:
   version "1.1.0"

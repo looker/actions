@@ -6,10 +6,12 @@ import concatStream = require("concat-stream")
 
 import * as Hub from "../../../../hub"
 
+import * as Pcancel from "p-cancelable"
 import { ActionCrypto } from "../../../../hub"
 import { GoogleSheetsAction } from "./google_sheets"
 
 const action = new GoogleSheetsAction()
+const cancel: Pcancel<string>[] = []
 action.executeInOwnProcess = false
 
 const stubFileName = "stubSuggestedFilename"
@@ -34,8 +36,7 @@ function expectGoogleSheetsMatch(request: Hub.ActionRequest, paramsMatch: any) {
         create: createSpy,
       },
     })
-
-  return chai.expect(action.validateAndExecute(request)).to.be.fulfilled.then(() => {
+  return chai.expect(action.validateAndExecute(request, cancel)).to.be.fulfilled.then(() => {
     chai.expect(createSpy).to.have.been.called
     stubClient.restore()
   })
@@ -171,7 +172,7 @@ describe(`${action.constructor.name} unit tests`, () => {
           state_url: "https://looker.state.url.com/action_hub_state/asdfasdfasdfasdf",
           state_json: `{"tokens": {"access_token": "token"}, "redirect": "fake.com"}`,
         }
-        chai.expect(action.validateAndExecute(request)).to.eventually.be.fulfilled.then( () => {
+        chai.expect(action.validateAndExecute(request, cancel)).to.eventually.be.fulfilled.then( () => {
           chai.expect(flushSpy).to.have.been.calledOnce
           stubDriveClient.restore()
           stubSheetClient.restore()
@@ -246,7 +247,7 @@ describe(`${action.constructor.name} unit tests`, () => {
           state_url: "https://looker.state.url.com/action_hub_state/asdfasdfasdfasdf",
           state_json: `{"tokens": {"access_token": "token"}, "redirect": "fake.com"}`,
         }
-        const requestResult = action.validateAndExecute(request)
+        const requestResult = action.validateAndExecute(request, cancel)
         chai.expect(requestResult).to.eventually.have.property("success", true)
           .then( () => {
           chai.expect(flushSpy).to.have.been.calledOnce
@@ -318,7 +319,7 @@ describe(`${action.constructor.name} unit tests`, () => {
           state_url: "https://looker.state.url.com/action_hub_state/asdfasdfasdfasdf",
           state_json: `{"tokens": {"access_token": "token"}, "redirect": "fake.com"}`,
         }
-        chai.expect(action.validateAndExecute(request)).to.eventually.be.fulfilled.then( () => {
+        chai.expect(action.validateAndExecute(request, cancel)).to.eventually.be.fulfilled.then( () => {
           chai.expect(sendSpy).to.have.been.calledOnce
           chai.expect(overwriteStub).to.not.have.been.called
           stubDriveClient.restore()
@@ -386,7 +387,7 @@ describe(`${action.constructor.name} unit tests`, () => {
           state_url: "https://looker.state.url.com/action_hub_state/asdfasdfasdfasdf",
           state_json: `{"tokens": {"access_token": "token"}, "redirect": "fake.com"}`,
         }
-        chai.expect(action.validateAndExecute(request)).to.eventually.be.fulfilled.then( () => {
+        chai.expect(action.validateAndExecute(request, cancel)).to.eventually.be.fulfilled.then( () => {
           chai.expect(sendSpy).to.have.been.calledOnce
           stubDriveClient.restore()
           stubSheetClient.restore()

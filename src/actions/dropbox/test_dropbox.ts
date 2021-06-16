@@ -5,6 +5,7 @@ import * as sinon from "sinon"
 
 import * as Hub from "../../hub"
 
+import * as Pcancel from "p-cancelable"
 import {ActionCrypto} from "../../hub"
 import { DropboxAction } from "./dropbox"
 
@@ -73,7 +74,8 @@ describe(`${action.constructor.name} unit tests`, () => {
         .callsFake(() => ({
           filesUpload: async () => Promise.reject("reject"),
         }))
-      const resp = action.validateAndExecute(request)
+      const cancel: Pcancel<string>[] = []
+      const resp = action.validateAndExecute(request, cancel)
       chai.expect(resp).to.eventually.deep.equal({
         success: false,
         state: {data: "reset"},

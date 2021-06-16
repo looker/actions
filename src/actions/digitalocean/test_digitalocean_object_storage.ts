@@ -5,9 +5,11 @@ import * as Hub from "../../hub"
 
 import { DigitalOceanObjectStorageAction } from "./digitalocean_object_storage"
 
+import * as Pcancel from "p-cancelable"
 import { expectAmazonS3Match } from "../amazon/test_amazon_s3"
 
 const action = new DigitalOceanObjectStorageAction()
+const cancel: Pcancel<string>[] = []
 
 describe(`${action.constructor.name} unit tests`, () => {
 
@@ -25,8 +27,7 @@ describe(`${action.constructor.name} unit tests`, () => {
           request.formParams = {}
           request.attachment = {}
           request.attachment.dataBuffer = Buffer.from("1,2,3,4", "utf8")
-
-          return chai.expect(action.validateAndExecute(request)).to.eventually
+          return chai.expect(action.validateAndExecute(request, cancel)).to.eventually
             .be.rejectedWith("Need Amazon S3 bucket.")
         })
 
@@ -44,8 +45,7 @@ describe(`${action.constructor.name} unit tests`, () => {
             secret_access_key: "mysecret",
             region: "us-east-1",
           }
-
-          return chai.expect(action.validateAndExecute(request)).to.eventually
+          return chai.expect(action.validateAndExecute(request, cancel)).to.eventually
             .be.rejectedWith(
               "A streaming action was sent incompatible data. The action must have a download url or an attachment.")
 

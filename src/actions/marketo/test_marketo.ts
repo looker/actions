@@ -3,6 +3,7 @@ import * as sinon from "sinon"
 
 import * as Hub from "../../hub"
 
+import * as Pcancel from "p-cancelable"
 import * as apiKey from "../../server/api_key"
 import Server from "../../server/server"
 import { MarketoAction } from "./marketo"
@@ -10,6 +11,7 @@ import { MarketoTransaction } from "./marketo_transaction"
 
 (async () => {
   const action = new MarketoAction()
+  const cancel: Pcancel<string>[] = []
   action.executeInOwnProcess = false
   const form = await action.form()
   const sampleData = {
@@ -88,7 +90,7 @@ import { MarketoTransaction } from "./marketo_transaction"
         request.attachment = {
           dataBuffer: Buffer.from(JSON.stringify(sampleData)),
         }
-        return chai.expect(action.validateAndExecute(request)).to.eventually
+        return chai.expect(action.validateAndExecute(request, cancel)).to.eventually
           .be.rejected
       })
 
@@ -107,7 +109,7 @@ import { MarketoTransaction } from "./marketo_transaction"
         request.attachment = {
           dataBuffer: Buffer.from(JSON.stringify(sampleData)),
         }
-        return chai.expect(action.validateAndExecute(request)).to.eventually
+        return chai.expect(action.validateAndExecute(request, cancel)).to.eventually
           .be.rejected
       })
 
@@ -126,7 +128,7 @@ import { MarketoTransaction } from "./marketo_transaction"
         request.attachment = {
           dataBuffer: Buffer.from(JSON.stringify(sampleData)),
         }
-        return chai.expect(action.validateAndExecute(request)).to.eventually
+        return chai.expect(action.validateAndExecute(request, cancel)).to.eventually
           .be.rejected
       })
 
@@ -145,7 +147,7 @@ import { MarketoTransaction } from "./marketo_transaction"
         request.attachment = {
           dataBuffer: Buffer.from(JSON.stringify(sampleData)),
         }
-        return chai.expect(action.validateAndExecute(request)).to.eventually
+        return chai.expect(action.validateAndExecute(request, cancel)).to.eventually
           .be.rejected
       })
 
@@ -163,7 +165,7 @@ import { MarketoTransaction } from "./marketo_transaction"
         request.attachment = {
           dataBuffer: Buffer.from(JSON.stringify(sampleData)),
         }
-        return chai.expect(action.validateAndExecute(request)).to.eventually
+        return chai.expect(action.validateAndExecute(request, cancel)).to.eventually
           .be.rejectedWith("Missing Lookup Field.")
       })
 
@@ -183,7 +185,7 @@ import { MarketoTransaction } from "./marketo_transaction"
           dataBuffer: Buffer.from(JSON.stringify(sampleData)),
         }
 
-        return chai.expect(action.validateAndExecute(request)).to.eventually
+        return chai.expect(action.validateAndExecute(request, cancel)).to.eventually
           .be.rejectedWith("Marketo Lookup Field for lead not present in query.")
       })
 
@@ -237,7 +239,7 @@ import { MarketoTransaction } from "./marketo_transaction"
 
         spies.forEach((s) => s.resetHistory())
 
-        return chai.expect(action.validateAndExecute(request)).to.be.fulfilled.then(() => {
+        return chai.expect(action.validateAndExecute(request, cancel)).to.be.fulfilled.then(() => {
           chai.expect(spy.leadCreateOrUpdate).to.have.been.calledWith(expectedLeadData, {lookupField: "email"})
           chai.expect(spy.campaignRequest).to.have.been.calledWith(
             "101",
@@ -256,7 +258,7 @@ import { MarketoTransaction } from "./marketo_transaction"
 
         spies.forEach((s) => s.resetHistory())
 
-        return chai.expect(action.validateAndExecute(request)).to.be.fulfilled.then(() => {
+        return chai.expect(action.validateAndExecute(request, cancel)).to.be.fulfilled.then(() => {
           chai.expect(spy.leadCreateOrUpdate).to.have.been.calledWith(expectedLeadData, {lookupField: "email"})
         })
       })
@@ -272,7 +274,7 @@ import { MarketoTransaction } from "./marketo_transaction"
 
         spies.forEach((s) => s.resetHistory())
 
-        return chai.expect(action.validateAndExecute(request)).to.be.fulfilled.then(() => {
+        return chai.expect(action.validateAndExecute(request, cancel)).to.be.fulfilled.then(() => {
           chai.expect(spy.leadCreateOrUpdate).to.have.been.calledWith(expectedLeadData, {lookupField: "email"})
           chai.expect(spy.campaignRequest).to.have.been.calledWith(
             "202",
@@ -292,7 +294,7 @@ import { MarketoTransaction } from "./marketo_transaction"
 
         spies.forEach((s) => s.resetHistory())
 
-        return chai.expect(action.validateAndExecute(request)).to.be.fulfilled.then(() => {
+        return chai.expect(action.validateAndExecute(request, cancel)).to.be.fulfilled.then(() => {
           chai.expect(spy.leadCreateOrUpdate).to.have.been.calledWith(expectedLeadData, {lookupField: "email"})
           chai.expect(spy.listAddLeadsToList).to.have.been.calledWith(
             "303",
@@ -312,7 +314,7 @@ import { MarketoTransaction } from "./marketo_transaction"
 
         spies.forEach((s) => s.resetHistory())
 
-        return chai.expect(action.validateAndExecute(request)).to.be.fulfilled.then(() => {
+        return chai.expect(action.validateAndExecute(request, cancel)).to.be.fulfilled.then(() => {
           chai.expect(spy.leadCreateOrUpdate).to.have.been.calledWith(expectedLeadData, {lookupField: "email"})
           chai.expect(spy.listRemoveLeadsFromList).to.have.been.calledWith(
             "404",

@@ -1,3 +1,4 @@
+import * as Pcancel from "p-cancelable"
 import * as Pq from "p-queue"
 
 export abstract class ProcessQueue {
@@ -11,5 +12,5 @@ export abstract class ProcessQueue {
         this.queue = new Pq({concurrency})
     }
 
-    abstract async run(data: string): Promise<string>
+    abstract async run(data: string, cancel: Pcancel<string>[]): Promise<string>
 }

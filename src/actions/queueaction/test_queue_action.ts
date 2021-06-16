@@ -1,6 +1,7 @@
 import * as chai from "chai"
 import * as Hub from "../../hub"
 
+import * as Pcancel from "p-cancelable"
 import {ExecuteProcessQueue} from "../../xpc/execute_process_queue"
 import {ExtendedProcessQueue} from "../../xpc/extended_process_queue"
 import {ProcessQueue} from "../../xpc/process_queue"
@@ -12,13 +13,14 @@ const extendedQueue = new ExtendedProcessQueue()
 process.execArgv = ["./node_modules/ts-node/dist/bin.js"]
 process.argv = ["node", "./integrations/src/boot.ts"]
 process.env.CHILD_TEST = "true"
+const cancel: Pcancel<string>[] = []
 
 function expectResponse(
     request: Hub.ActionRequest,
     success: boolean,
     queue: ProcessQueue,
 ) {
-    const execute = action.validateAndExecute(request, queue).then((response: Hub.ActionResponse) => {
+    const execute = action.validateAndExecute(request, cancel, queue).then((response: Hub.ActionResponse) => {
         chai.expect(response.success).to.equal(success)
     })
     return chai.expect(execute).to.be.fulfilled

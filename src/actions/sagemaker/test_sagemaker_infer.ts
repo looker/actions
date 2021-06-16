@@ -6,8 +6,10 @@ import * as Hub from "../../hub"
 import { SageMakerInferAction } from "./sagemaker_infer"
 
 import concatStream = require("concat-stream")
+import * as Pcancel from "p-cancelable"
 
 const action = new SageMakerInferAction()
+const cancel: Pcancel<string>[] = []
 
 describe(`${action.constructor.name} unit tests`, () => {
 
@@ -158,7 +160,7 @@ describe(`${action.constructor.name} unit tests`, () => {
             createTransformJob: createTransformJobSpy,
           }))
 
-        return chai.expect(action.validateAndExecute(request))
+        return chai.expect(action.validateAndExecute(request, cancel))
           .to.be.fulfilled
           .then((result) => {
             chai.expect(result.success, "result.success").to.be.true

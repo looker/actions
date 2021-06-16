@@ -3,6 +3,7 @@ import * as sinon from "sinon"
 
 import * as Hub from "../../hub"
 
+import * as Pcancel from "p-cancelable"
 import * as httpRequest from "request-promise-native"
 import Sinon = require("sinon")
 import * as apiKey from "../../server/api_key"
@@ -12,6 +13,7 @@ import { EVENT, USER } from "./mparticle_constants"
 
 const action = new MparticleAction()
 action.executeInOwnProcess = false
+const cancel: Pcancel<string>[] = []
 
 const sampleData = {
   fields: {
@@ -40,7 +42,7 @@ describe(`${action.constructor.name} unit tests`, () => {
       request.attachment = {
         dataBuffer: Buffer.from(JSON.stringify(sampleData)),
       }
-      return chai.expect(action.validateAndExecute(request)).to.eventually
+      return chai.expect(action.validateAndExecute(request, cancel)).to.eventually
         .be.rejectedWith("Required setting \"API Key\" not specified in action settings.")
     })
 
@@ -57,7 +59,7 @@ describe(`${action.constructor.name} unit tests`, () => {
       request.attachment = {
         dataBuffer: Buffer.from(JSON.stringify(sampleData)),
       }
-      return chai.expect(action.validateAndExecute(request)).to.eventually
+      return chai.expect(action.validateAndExecute(request, cancel)).to.eventually
         .be.rejectedWith("Required setting \"API Secret\" not specified in action settings.")
     })
 
@@ -72,7 +74,7 @@ describe(`${action.constructor.name} unit tests`, () => {
       request.attachment = {
         dataBuffer: Buffer.from(JSON.stringify(sampleData)),
       }
-      return chai.expect(action.validateAndExecute(request)).to.eventually
+      return chai.expect(action.validateAndExecute(request, cancel)).to.eventually
         .be.rejectedWith("Missing data type (user|event).")
     })
 
@@ -89,7 +91,7 @@ describe(`${action.constructor.name} unit tests`, () => {
       request.attachment = {
         dataBuffer: Buffer.from(JSON.stringify(sampleData)),
       }
-      return chai.expect(action.validateAndExecute(request)).to.eventually
+      return chai.expect(action.validateAndExecute(request, cancel)).to.eventually
         .be.rejectedWith("Each row must specify at least 1 identity tag.")
     })
   })
@@ -162,7 +164,7 @@ describe(`${action.constructor.name} unit tests`, () => {
       request.attachment = {
         dataBuffer: Buffer.from(JSON.stringify(data)),
       }
-      await action.validateAndExecute(request)
+      await action.validateAndExecute(request, cancel)
       chai.expect(postSpy.args[0][0].body[0].events[0].data.custom_event_type).to.equal("other")
     })
 
@@ -180,7 +182,7 @@ describe(`${action.constructor.name} unit tests`, () => {
       request.attachment = {
         dataBuffer: Buffer.from(JSON.stringify(data)),
       }
-      await action.validateAndExecute(request)
+      await action.validateAndExecute(request, cancel)
       chai.expect(postSpy.args[0][0].body[0].device_info).to.eql({ brand: "foo" })
     })
 
@@ -198,7 +200,7 @@ describe(`${action.constructor.name} unit tests`, () => {
       request.attachment = {
         dataBuffer: Buffer.from(JSON.stringify(data)),
       }
-      await action.validateAndExecute(request)
+      await action.validateAndExecute(request, cancel)
       const custAttrs = postSpy.args[0][0].body[0].events[0].data.custom_attributes
       chai.expect(custAttrs).to.eql({ "looker_user.good_custom": "good" })
     })

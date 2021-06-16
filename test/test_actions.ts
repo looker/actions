@@ -1,5 +1,6 @@
 import * as chai from "chai"
 
+import * as Pcancel from "p-cancelable"
 import * as Hub from "../src/hub"
 import { ActionRequest } from "../src/hub"
 
@@ -68,8 +69,9 @@ describe("Hub.Action", () => {
     it("automatically errors for lack of required parameters", () => {
       const action = new TestAction()
       const req = new ActionRequest()
+      const cancel: Pcancel<string>[] = []
       req.type = Hub.ActionType.Dashboard
-      return chai.expect(action.validateAndExecute(req)).to.eventually.be.rejectedWith(
+      return chai.expect(action.validateAndExecute(req, cancel)).to.eventually.be.rejectedWith(
         'Required setting "Cool Param" not specified in action settings.',
       )
     })
@@ -77,7 +79,8 @@ describe("Hub.Action", () => {
     it("automatically errors for an unspecified request type", () => {
       const action = new TestAction()
       const req = new ActionRequest()
-      return chai.expect(action.validateAndExecute(req)).to.eventually.be.rejectedWith(
+      const cancel: Pcancel<string>[] = []
+      return chai.expect(action.validateAndExecute(req, cancel)).to.eventually.be.rejectedWith(
         'No request type specified. The request must be of type: "cell", "dashboard".',
       )
     })
@@ -85,8 +88,9 @@ describe("Hub.Action", () => {
     it("automatically errors for an unsupported request type", () => {
       const action = new TestAction()
       const req = new ActionRequest()
+      const cancel: Pcancel<string>[] = []
       req.type = Hub.ActionType.Query
-      return chai.expect(action.validateAndExecute(req)).to.eventually.be.rejectedWith(
+      return chai.expect(action.validateAndExecute(req, cancel)).to.eventually.be.rejectedWith(
         'This action does not support requests of type "query". The request must be of type: "cell", "dashboard".',
       )
     })
@@ -94,11 +98,12 @@ describe("Hub.Action", () => {
     it("succeeds for a valid request", () => {
       const action = new TestAction()
       const req = new ActionRequest()
+      const cancel: Pcancel<string>[] = []
       req.type = Hub.ActionType.Dashboard
       req.params = {
         cool: "beans",
       }
-      return chai.expect(action.validateAndExecute(req)).to.eventually.deep.eq({
+      return chai.expect(action.validateAndExecute(req, cancel)).to.eventually.deep.eq({
         message: "Did It",
         refreshQuery: false,
         success: true,

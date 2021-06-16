@@ -1,12 +1,14 @@
 import * as chai from "chai"
 import * as sinon from "sinon"
 
+import * as Pcancel from "p-cancelable"
 import * as Hub from "../../hub"
 import * as apiKey from "../../server/api_key"
 import Server from "../../server/server"
 import { SegmentAction } from "./segment"
 
 const action = new SegmentAction()
+const cancel: Pcancel<string>[] = []
 action.executeInOwnProcess = false
 
 function expectSegmentMatch(request: Hub.ActionRequest, match: any) {
@@ -31,7 +33,7 @@ function expectSegmentMatch(request: Hub.ActionRequest, match: any) {
     timestamp: now,
   }
   const merged = {...baseMatch, ...match}
-  return chai.expect(action.validateAndExecute(request)).to.be.fulfilled.then(() => {
+  return chai.expect(action.validateAndExecute(request, cancel)).to.be.fulfilled.then(() => {
     chai.expect(segmentCallSpy).to.have.been.calledWithExactly(merged)
     stubClient.restore()
     stubAnon.restore()
@@ -277,7 +279,7 @@ describe(`${action.constructor.name} unit tests`, () => {
       request.params = {
         segment_write_key: "mykey",
       }
-      return chai.expect(action.validateAndExecute(request)).to.eventually
+      return chai.expect(action.validateAndExecute(request, cancel)).to.eventually
         .be.rejectedWith(
           "A streaming action was sent incompatible data. The action must have a download url or an attachment.")
     })
@@ -291,7 +293,7 @@ describe(`${action.constructor.name} unit tests`, () => {
       request.attachment = {dataBuffer: Buffer.from(JSON.stringify({
         data: [{coolfield: {value: "funvalue"}}],
       }))}
-      chai.expect(action.validateAndExecute(request)).to.eventually
+      chai.expect(action.validateAndExecute(request, cancel)).to.eventually
         .deep.equal({
           message: "Query requires a field tagged email or user_id or segment_anonymous_id.",
           success: false,
@@ -311,7 +313,7 @@ describe(`${action.constructor.name} unit tests`, () => {
         fields: {dimensions: [{name: "coolfield", tags: []}]},
         data: [{coolfield: {value: "funvalue"}}],
       }))}
-      chai.expect(action.validateAndExecute(request)).to.eventually
+      chai.expect(action.validateAndExecute(request, cancel)).to.eventually
         .deep.equal({
           message: "Query requires a field tagged email or user_id or segment_anonymous_id.",
           success: false,
@@ -328,7 +330,7 @@ describe(`${action.constructor.name} unit tests`, () => {
         fields: {dimensions: [{name: "coolfield", tags: ["user_id"]}]},
         data: [],
       }))}
-      return chai.expect(action.validateAndExecute(request)).to.eventually
+      return chai.expect(action.validateAndExecute(request, cancel)).to.eventually
         .be.rejectedWith(`Required setting "Segment Write Key" not specified in action settings.`)
     })
 

@@ -1,4 +1,5 @@
 import * as chai from "chai"
+import * as Pcancel from "p-cancelable"
 import * as Hub from "../../hub"
 import { HubspotContactsAction } from "./hubspot_contacts"
 import { expectHubspotMatch } from "./test_hubspot"
@@ -83,9 +84,10 @@ describe(`${action.constructor.name} unit tests`, () => {
         }),
       ),
     }
+    const cancel: Pcancel<string>[] = []
 
     chai
-      .expect(action.validateAndExecute(request))
+      .expect(action.validateAndExecute(request, cancel))
       .to.eventually.deep.equal({
         message: "Dimension with the hubspot_contact_id tag is required",
         success: false,

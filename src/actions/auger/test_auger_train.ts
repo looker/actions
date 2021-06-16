@@ -4,6 +4,7 @@ import * as sinon from "sinon"
 import * as Hub from "../../hub"
 import { Transaction } from "./poller"
 
+import * as Pcancel from "p-cancelable"
 import { AugerTrainAction } from "./auger_train"
 
 const action = new AugerTrainAction()
@@ -56,8 +57,9 @@ describe(`${action.constructor.name} unit tests`, () => {
       stubStartProject = sinon.stub(action as any, "startProject")
       stubUploadToS3 = sinon.stub(action as any, "uploadToS3")
       stubChunkToS3 = sinon.stub(action as any, "chunkToS3")
+      const cancel: Pcancel<string>[] = []
 
-      chai.expect(action.validateAndExecute(request)).to.be.fulfilled.then(() => {
+      chai.expect(action.validateAndExecute(request, cancel)).to.be.fulfilled.then(() => {
         chai.expect(postSpy).to.have.been.called
         chai.expect(stubPoller, "stubPoller").to.have.been.called
         chai.expect(stubStartProject, "stubStartProject").to.have.been.called

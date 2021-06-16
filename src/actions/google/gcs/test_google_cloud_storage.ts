@@ -4,9 +4,11 @@ import { Stream } from "stream"
 
 import * as Hub from "../../../hub"
 
+import * as Pcancel from "p-cancelable"
 import { GoogleCloudStorageAction } from "./google_cloud_storage"
 
 const action = new GoogleCloudStorageAction()
+const cancel: Pcancel<string>[] = []
 
 function expectGoogleCloudStorageMatch(request: Hub.ActionRequest,
                                        bucketMatch: string,
@@ -37,7 +39,7 @@ function expectGoogleCloudStorageMatch(request: Hub.ActionRequest,
     .callsFake(() => "stubSuggestedFilename")
   const stubDate = sinon.stub(Date, "now")
     .callsFake(() => "1234")
-  return chai.expect(action.validateAndExecute(request)).to.be.fulfilled.then(() => {
+  return chai.expect(action.validateAndExecute(request, cancel)).to.be.fulfilled.then(() => {
     chai.expect(bucketSpy).to.have.been.calledWithMatch(bucketMatch)
     chai.expect(fileSpy).to.have.been.calledWithMatch(fileMatch)
     stubClient.restore()
@@ -62,7 +64,7 @@ describe(`${action.constructor.name} unit tests`, () => {
       request.attachment = {}
       request.attachment.dataBuffer = Buffer.from("1,2,3,4", "utf8")
 
-      return chai.expect(action.validateAndExecute(request)).to.eventually
+      return chai.expect(action.validateAndExecute(request, cancel)).to.eventually
         .be.rejectedWith("Need Google Cloud Storage bucket.")
     })
 
@@ -78,7 +80,7 @@ describe(`${action.constructor.name} unit tests`, () => {
         bucket: "mybucket",
       }
 
-      return chai.expect(action.validateAndExecute(request)).to.eventually
+      return chai.expect(action.validateAndExecute(request, cancel)).to.eventually
         .be.rejectedWith(
           "A streaming action was sent incompatible data. The action must have a download url or an attachment.")
     })
