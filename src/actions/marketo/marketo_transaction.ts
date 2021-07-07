@@ -1,6 +1,6 @@
+import * as Pq from "p-queue"
 import * as winston from "winston"
 import * as Hub from "../../hub"
-import { Queue } from "./queue"
 
 const MARKETO: any = require("node-marketo-rest")
 
@@ -23,6 +23,7 @@ export class MarketoTransaction {
   lookupField?: string
 
   async handleRequest(request: Hub.ActionRequest): Promise<Hub.ActionResponse> {
+    const queue = new Pq({concurrency: 10})
     this.campaignIds = []
     this.addListIds = []
     this.removeListIds = []
@@ -70,15 +71,23 @@ export class MarketoTransaction {
 
     this.marketo = this.marketoClientFromRequest(request)
 
-    const queue = new Queue()
-
     let rows: Hub.JsonDetail.Row[] = []
+    const results: Result[] = []
+    const errors: Result[] = []
 
-    const sendChunk = () => {
-      const chunk = rows.slice(0)
-      const task = async () => this.processChunk(chunk)
-      rows = []
-      queue.addTask(task)
+    const sendChunk = async () => {
+      return new Promise<void>((resolve, reject) => {
+        const chunk = rows.slice(0)
+        rows = []
+        this.processChunk(chunk).then((response: any) => {
+          results.push(response)
+          resolve()
+        })
+        .catch((error: any) => {
+          errors.push(error)
+          reject()
+        })
+      })
     }
 
     await request.streamJsonDetail({
@@ -94,7 +103,9 @@ export class MarketoTransaction {
         // add the row to our row queue
         rows.push(row)
         if (rows.length === numLeadsAllowedPerCall) {
-          sendChunk()
+          queue.add( async () => sendChunk() ).catch((_err: any) => {
+            winston.error("Error enqueueing Marketo task")
+          })
         }
       },
     })
@@ -103,25 +114,13 @@ export class MarketoTransaction {
 
     // if any rows are left, send one more chunk
     if (rows.length > 0) {
-      sendChunk()
+      queue.add(async () => sendChunk()).catch((_err: any) => {
+        winston.error("Error enqueueing Marketo task")
+      })
     }
 
     // tell the queue we're finished adding rows and await the results
-    const completed = await queue.finish()
-
-    // filter all the successful results
-    const results = (
-      completed
-      .filter((task: any) => task.result)
-      .map((task: any) => task.result)
-    )
-
-    // filter all the request errors
-    const errors = (
-      completed
-      .filter((task: any) => task.error)
-      .map((task: any) => task.error)
-    )
+    await queue.onEmpty()
 
     // concatenate results and errors into a single result
     const result: any = {
