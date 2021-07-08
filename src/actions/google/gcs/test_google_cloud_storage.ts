@@ -197,7 +197,7 @@ describe(`${action.constructor.name} unit tests`, () => {
 
       const stubClient = sinon.stub(action as any, "gcsClientFromRequest")
         .callsFake(() => ({
-          getBuckets: async () => Promise.resolve(),
+          getBuckets: async () => Promise.resolve([[]]),
         }))
 
       const request = new Hub.ActionRequest()

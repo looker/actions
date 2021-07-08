@@ -87,7 +87,7 @@ export class GoogleCloudStorageAction extends Hub.Action {
       return form
     }
 
-    if (!(results && results[0])) {
+    if (!(results && results[0] && results[0][0])) {
       form.error = "No buckets in account."
       return form
     }
