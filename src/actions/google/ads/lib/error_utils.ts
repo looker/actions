@@ -26,18 +26,26 @@ export function makeBetterErrorMessage(err: any, webhookId?: string) {
   let apiError: any
   let subError: any
   let errorCode: number | undefined
+  let errorName: string | undefined
   let generalMessage: string | undefined
   let detailMessage: string | undefined
   let userListError: string | undefined
 
   if (err.response && err.response.data && err.response.data.error) {
     apiError = err.response.data.error
-    if (apiError.code) {
-      errorCode = apiError.code
+
+    if (apiError === "invalid_grant") {
+      errorCode = 400
+      errorName = "OAuth Error"
+      generalMessage = "Received 'invalid_grant' from authentication server."
+        + " This usually means that app access was revoked or the refresh token has expired."
+        + " Please re-authenticate to Google Ads via the action form and try again."
+    } else {
+      errorName = "Ads API Error"
+      errorCode = apiError.code ? apiError.code : "[no code]"
+      generalMessage = apiError.message ? apiError.message : "[no message]"
     }
-    if (apiError.message) {
-      generalMessage = apiError.message
-    }
+
     if (Array.isArray(apiError.details) && apiError.details[0] && Array.isArray(apiError.details[0].errors)) {
       subError = apiError.details[0].errors[0]
       if (subError.message) {
@@ -57,7 +65,7 @@ export function makeBetterErrorMessage(err: any, webhookId?: string) {
   }
 
   if (apiError) {
-    err.name = "Ads API Error"
+    err.name = errorName
     err.message = `${errorCode} - ${generalMessage}` + (detailMessage ? ` Details: ${detailMessage}` : "")
   }
 

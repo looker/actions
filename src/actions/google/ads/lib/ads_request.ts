@@ -34,7 +34,6 @@ export class GoogleAdsActionRequest {
     readonly actionInstance: GoogleAdsCustomerMatch,
     readonly log: Logger,
   ) {
-
     const state = safeParseJson(hubRequest.params.state_json)
 
     if (!state || !state.tokens || !state.tokens.access_token || !state.tokens.refresh_token || !state.redirect) {
@@ -129,7 +128,9 @@ export class GoogleAdsActionRequest {
       if (!newListName) {
         throw new MissingRequiredParamsError("Name for new list is missing")
       }
-      await executor.createUserList(newListName, newListDescription)
+      const timestamp = new Date().toISOString().substr(0, 19).replace('T', ' ')
+      const newListNameWithTimestamp = `${newListName} (from Looker ${timestamp}Z)`
+      await executor.createUserList(newListNameWithTimestamp, newListDescription)
     } else {
       if (!executor.targetUserListRN) {
         throw new MissingRequiredParamsError("List resource name is missing or could not be created")
